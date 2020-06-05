@@ -1,33 +1,57 @@
-import React from 'react';
-import './App.css';
-import Book from './Book';
-import BookForm from './BookForm';
+import React from "react";
+import "./App.css";
+import Book from "./Book";
+import BookForm from "./BookForm";
 
-class App extends React.Component{
+const API_URL = "https://www.googleapis.com/books/v1/volumes?q=";
 
-  constructor( props ){
-    super( props );
-    this.state = {
-      /*
-        Your code goes here
-      */
-    }
-  }
+const App = () => {
+	const [books, setBooks] = React.useState([]);
+	const [error, setError] = React.useState(null);
 
-  /* 
-    Your code goes here
-  */
+	const handleSubmit = (e) => {
+		e.preventDefault();
 
-  render(){
-    return(
-      <div>
-        {/* 
-          Your code goes here
-        */}
-      </div>
-    )
-  }
+		const value = document.querySelector("#name").value;
 
-}
+		fetch(`${API_URL}${value}`)
+			.then((response) => {
+				if (response.ok) {
+					return response.json();
+				}
+			})
+			.then((data) => {
+				if (data.totalItems > 0) {
+					setBooks(data.items);
+					setError(null);
+					console.log(data);
+				} else {
+					setError("No results found!");
+					setBooks([]);
+				}
+			})
+			.catch((e) => {
+				console.log(e);
+			});
+	};
+
+	return (
+		<div className="container">
+			<div className="search-form">
+				<BookForm handleSubmit={handleSubmit} />
+			</div>
+			{error && (
+				<div className="error">
+					<h1>{error}</h1>
+				</div>
+			)}
+			<div className="results-container">
+				{books.map((book, i) => (
+					<Book {...book} key={i} />
+				))}
+			</div>
+		</div>
+	);
+};
 
 export default App;
